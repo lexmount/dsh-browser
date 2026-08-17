@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        node: [22.14.0, 22.22.2]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Verify native source pin
+        run: |
+          node --input-type=module -e "import source from './native-source.json' with { type: 'json' }; if (source.commit !== '1c8e949d613eabbfcdb44c45bba8729189c13b97' || source.version !== '1.1.11') process.exit(1)"
+      - name: Verify Bundle manifest
+        run: |
+          node --input-type=module -e "import pkg from './package.json' with { type: 'json' }; if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') process.exit(1)"

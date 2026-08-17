@@ -1,0 +1,12 @@
+{
+  "name": "browser-cli",
+  "version": "1.1.11",
+  "repository": "https://github.com/lexmount/browser-cli-rs.git",
+  "commit": "1c8e949d613eabbfcdb44c45bba8729189c13b97",
+  "targets": {
+    "win32-x64": "x86_64-pc-windows-msvc",
+    "darwin-arm64": "aarch64-apple-darwin",
+    "darwin-x64": "x86_64-apple-darwin",
+    "linux-x64": "x86_64-unknown-linux-musl"
+  }
+}

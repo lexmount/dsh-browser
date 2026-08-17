@@ -1,0 +1,105 @@
+{
+  "name": "@lexmount/dsh-browser",
+  "version": "0.1.0-rc.0",
+  "description": "Lexmount cloud browser tools for DeepSeek Harness",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "cordis.patch.yml",
+    "native-source.json",
+    "vendor/manifest.json",
+    "vendor/*/browser-cli",
+    "vendor/*/browser-cli.exe",
+    "docs/*.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "clean": "node ./scripts/clean.mjs",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/binary.test.mjs test/cli.test.mjs test/redact.test.mjs test/tool-specs.test.mjs test/tools.test.mjs",
+    "test:native": "npm run build && node --test test/native-cli.test.mjs",
+    "check": "npm run typecheck && npm test",
+    "vendor:verify": "node ./scripts/verify-vendor.mjs --current",
+    "release:check": "npm run check && node ./scripts/verify-vendor.mjs --all && npm run test:native",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run release:check"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lexmount/dsh-browser.git"
+  },
+  "homepage": "https://github.com/lexmount/dsh-browser#readme",
+  "bugs": {
+    "url": "https://github.com/lexmount/dsh-browser/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "browser-automation",
+    "cloud-browser",
+    "lexmount"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh": ">=0.1.0-rc.6 <0.2.0",
+    "@deepseek-ai/dsh-attachment": ">=0.1.0-rc.6 <0.2.0",
+    "@deepseek-ai/dsh-llm": ">=0.1.0-rc.6 <0.2.0",
+    "@deepseek-ai/dsh-system-prompt": ">=0.1.0-rc.6 <0.2.0",
+    "@deepseek-ai/dsh-tools": ">=0.1.0-rc.6 <0.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-attachment": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-system-prompt": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-attachment": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-llm": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-system-prompt": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-tools": "0.1.0-rc.6",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.9.3"
+  }
+}

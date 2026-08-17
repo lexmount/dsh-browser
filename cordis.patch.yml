@@ -1,0 +1,3 @@
+- insert:
+    - id: lexmount-browser
+      name: '@lexmount/dsh-browser'
