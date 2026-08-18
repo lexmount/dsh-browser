@@ -33,17 +33,72 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 
 ## Install
 
-Install the current npm pre-release:
+The current pre-release requires Node.js `>=22.14.0`, DSH `0.1.0-rc.6`, and a
+`pnpm` executable on `PATH`. The commands below use `npx`, so a global DSH
+installation is not required. Keep `@next` in preview installations; do not
+rely on npm's implicit `latest` tag until this release line is formally
+promoted.
 
-```bash
+### Windows x64
+
+Open a normal, non-administrator PowerShell in the directory that should become
+the DSH workspace, then run:
+
+```powershell
+node --version
+corepack --version
+corepack install --global pnpm@11.22.0
 corepack enable pnpm
+pnpm --version
+
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
 ```
 
-Keep `@next` in preview installations; do not rely on npm's implicit `latest` tag until this release line is formally promoted.
+If `corepack enable pnpm` reports an access error under
+`C:\Program Files\nodejs`, run only the Corepack setup commands once from an
+administrator PowerShell, close it, and run DSH itself as the normal user. If
+port `3080` is already occupied, start DSH on an OS-assigned free port and open
+the URL it prints:
 
-DSH RC.6 delegates plugin installation to a `pnpm` executable on `PATH`; it does not bundle that executable. If Corepack cannot create the shim, install pnpm through the normal Node package-manager setup and verify `pnpm --version` first.
+```powershell
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web --port 0
+```
+
+### macOS Apple Silicon
+
+This pre-release supports Apple Silicon only. Confirm that the machine reports
+`arm64`; `x86_64` means an Intel Mac and is not currently supported. In
+Terminal, change to the directory that should become the DSH workspace, then
+run:
+
+```bash
+uname -m
+node --version
+corepack --version
+corepack install --global pnpm@11.22.0
+corepack enable pnpm
+pnpm --version
+
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
+```
+
+If port `3080` is already occupied, use an OS-assigned free port and open the
+printed URL:
+
+```bash
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web --port 0
+```
+
+DSH RC.6 delegates plugin installation to a `pnpm` executable on `PATH`; it does
+not bundle that executable. If Corepack cannot create the shim, install pnpm
+through the normal Node package-manager setup and verify `pnpm --version`
+first.
+
+If DSH was already running while the Bundle was installed or updated, stop and
+restart it before testing. Package installation does not hot-load a new Bundle
+into an existing Web process.
 
 For unattended use, install the same Bundle into the Headless profile:
 
@@ -51,7 +106,9 @@ For unattended use, install the same Bundle into the Headless profile:
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile headless add @lexmount/dsh-browser@next
 ```
 
-The supported Harness range is `>=0.1.0-rc.6 <0.2.0`. DSH remains a release candidate, so each DSH upgrade requires installation and tool-registration regression testing.
+The supported Harness range is `>=0.1.0-rc.6 <0.2.0`. DSH remains a release
+candidate, so each DSH upgrade requires installation and tool-registration
+regression testing.
 
 ## First use and cache
 
