@@ -30,3 +30,11 @@ jobs:
       - name: Verify Bundle manifest
         run: |
           node --input-type=module -e "import pkg from './package.json' with { type: 'json' }; if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') process.exit(1)"
+      - name: Verify release trigger contract
+        run: |
+          grep -Fq 'tags: ["v*"]' .github/workflows/release.yml
+          ! grep -q 'workflow_dispatch' .github/workflows/release.yml
+          ! grep -q 'inputs\.' .github/workflows/release.yml
+          grep -Fq 'npm_tag=next' .github/workflows/release.yml
+          grep -Fq 'npm_tag=latest' .github/workflows/release.yml
+          grep -Fq 'needs.assemble.outputs.npm_tag' .github/workflows/release.yml
