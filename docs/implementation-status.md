@@ -1,8 +1,8 @@
 # Implementation status
 
-Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The npm wrapper is implemented locally; stable publication is still blocked by native assets and external validation.
+Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The first npm preview and its matching Git tag are published; stable support remains blocked by real Windows/macOS and Lexmount service validation.
 
-## Completed locally
+## Completed and verified
 
 - DSH Bundle manifest and Cordis patch implemented.
 - All 31 frozen browser-cli capabilities registered as DSH native tools, including evaluate and raw CDP.
@@ -20,6 +20,10 @@ Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The npm wr
 - The previous bundled Linux binary and all `vendor/` package entries have been removed from the working tree.
 - A newly packed lightweight tarball installs through the real DSH RC.6 `dsh plugin`/pnpm path into clean disposable Web and Headless profiles without peer warnings. Both composed configs contain exactly one `lexmount-browser` entry.
 - The clean Web profile boots successfully on an OS-assigned port and returns HTTP 200. This proves unsupported Linux is deferred until tool resolution instead of breaking Bundle registration. The Headless profile reaches its native help path. Neither load path downloads a CLI.
+- The public npm registry tarball is byte-for-byte identical to the release working tree tarball: SHA-256 `10edac9849e4ded35c8b15afa125680d9bd0a9ac0a0843d69ef57170cea05fa8`.
+- Clean DSH RC.6 Web and Headless profiles install `@lexmount/dsh-browser@next` directly from the public npm registry, each register one Bundle entry, and the Web profile returns HTTP 200.
+- GitHub `main` and the annotated `v0.1.0-rc.0` tag are pushed. CI run `32095403677` passes on Node 22.14.0 and 22.22.2.
+- Tag-only release run `32095697452` passes with `publish=false`; its downloaded Action artifact is byte-for-byte identical to the public npm tarball.
 
 ## Native source currently pinned
 
@@ -35,9 +39,9 @@ The upstream v1.1.12 Action completed successfully and published macOS ARM64 and
 - Because the current host is Linux and Linux is not supported by this pre-release, the runtime download/native integration test must be completed on Windows x64 and macOS Apple Silicon.
 - Real Lexmount authentication, Session, Context, browser action, screenshot, PDF/download, cancellation, cleanup, and Headless service E2E remain pending.
 - Windows x64 and macOS Apple Silicon remain manual-platform work. No claim is made that they passed from this Linux host.
-- `https://github.com/lexmount/dsh-browser` is private and empty, so this repository's CI/release workflow cannot run yet.
-- The current machine is not authenticated to npm, `@lexmount/dsh-browser` returns npm 404, and the first package version must be published interactively before Trusted Publishing can be configured.
-- npm scope permission, account 2FA, GitHub `npm` environment/reviewers, repository visibility, and MIT license approval remain external release gates.
+- npm Trusted Publisher and the GitHub `npm` environment/reviewers are not configured yet. The next unused version must prove the OIDC path.
+- Repository visibility and MIT license approval remain owner decisions.
+- npm accepted this package as published without a dual-use declaration. Because the frozen tool surface includes arbitrary page JavaScript and raw CDP, the owner should confirm that it remains classified as ordinary authorized browser automation; declaring it dual-use would require staged publishing and 2FA promotion instead of direct OIDC publishing.
 - DSH RC.6 cannot enforce generic per-tool side-effect metadata or generic PDF/download attachments. See [DSH RC.6 integration gaps](dsh-rc6-gaps.md).
 
-The npm artifact is structurally release-ready for its stated two-platform pre-release. External repository, npm authentication, legal approval, DSH regression, and real Windows/macOS validation still block publication.
+The npm preview is structurally published and registry-installable for its stated two-platform scope. Legal approval, Trusted Publishing setup, DSH regression, and real Windows/macOS validation still block stable promotion.
