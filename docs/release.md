@@ -26,29 +26,30 @@ The current npm pre-release supports Windows x64 and macOS Apple Silicon only. L
 6. The tarball, `SHA256SUMS`, and `native-source.json` become one immutable `npm-package` artifact.
 7. With `publish=false`, the workflow stops after artifact creation for manual review.
 8. With `publish=true`, the `npm` environment approval gate releases that exact artifact through OIDC; no rebuild occurs.
-9. Only after npm succeeds does a separate job attach the same tarball, checksum, and source pin to the matching GitHub Release.
+9. npm publish-time scanning makes new versions temporarily unavailable. The workflow waits up to 25 minutes, downloads the exact public version, and compares its SHA-256 with the assembled artifact.
+10. Only after the public registry comparison succeeds does a separate job attach the same tarball, checksum, and source pin to the matching GitHub Release.
 
 The workflow never needs Rust, Apple signing secrets, COS credentials, or native build runners. Those belong to the upstream browser-cli release.
 
-## First npm publication
+## Bootstrap npm publication record
 
-`@lexmount/dsh-browser` does not yet exist on npm. npm requires a package to exist before a Trusted Publisher can be configured, so the first version cannot use this repository's OIDC publish job.
+The first version could not use Trusted Publishing because npm required the package to exist before its Publisher could be configured. It was therefore published interactively on 2026-08-18 with npm web authentication:
 
-1. Confirm the publisher controls the `@lexmount` scope and account-level 2FA is enabled.
-2. Push the reviewed source and tag, then run `assemble-release` with `publish=false` on that exact tag.
-3. Download the `npm-package` artifact and verify `SHA256SUMS`.
-4. Complete Windows x64 and macOS Apple Silicon validation against that exact tarball.
-5. Log in interactively and publish the downloaded tarball without repacking:
+```bash
+npm publish --access public --tag next
+```
 
-   ```bash
-   npm login
-   npm whoami
-   npm publish ./lexmount-dsh-browser-0.1.0-rc.0.tgz --access public --tag next
-   ```
+Recorded result:
 
-6. Create the matching GitHub Release with the same tarball, `SHA256SUMS`, and `native-source.json`.
+- package: `@lexmount/dsh-browser@0.1.0-rc.0`;
+- npm SHA-1: `a76b0fc017ef56c21e2eb080b63423f2a48012a2`;
+- tarball SHA-256: `10edac9849e4ded35c8b15afa125680d9bd0a9ac0a0843d69ef57170cea05fa8`;
+- npm integrity: `sha512-4EsVaX2qwMXiCkGOLXobuFF948jACFZ0WYmg/yzce9Ryb/kD6p5KTE3MyNpvSNuton5Z9LqvJaA+j6i4YuXabA==`;
+- npm publish-time scanning passed and a fresh public-registry download matched the local tarball byte-for-byte;
+- clean DSH RC.6 Web and Headless profiles installed `@lexmount/dsh-browser@next`, and Web returned HTTP 200;
+- annotated Git tag `v0.1.0-rc.0` points to commit `ef93ac2ad309447a05608c496aa4ce2e96575816`, the exact release source state.
 
-The current machine is not logged in to npm; `npm whoami` returns `ENEEDAUTH`. That is an external first-publish prerequisite, not a package-code defect.
+The publication was requested with `next`, but npm exposed both `next` and `latest` for this first package version. An authenticated removal of `latest` returned HTTP 400. Preview installation instructions therefore continue to name `@next` explicitly.
 
 ## Configure npm Trusted Publishing
 
@@ -67,6 +68,8 @@ Create the GitHub `npm` environment with required reviewers. The publish job has
 
 Once OIDC publishing is proven, set npm publishing access to require 2FA and disallow traditional tokens. Trusted publishing from a public source repository automatically produces npm provenance; a private repository can publish through OIDC but does not receive public provenance.
 
+The package is currently treated as ordinary authorized browser automation. If the owner instead classifies its arbitrary JavaScript/raw CDP capabilities as dual-use under npm policy, do not use the direct OIDC publish step above: add the persistent `contentPolicy` metadata and `DISCLOSURE`, stage through OIDC, and require a 2FA promotion. See npm's [Dual-Use Content Policy](https://docs.npmjs.com/policies/dual-use/).
+
 ## Later pre-releases
 
 1. Update `package.json` and `package-lock.json` to a new unused pre-release version.
@@ -80,7 +83,7 @@ An npm name/version pair can never be reused, even after unpublishing. Do not re
 
 ## Stable promotion
 
-Promote this platform-limited line only after Windows x64, macOS Apple Silicon, and real Lexmount service validation are complete. If stable product policy still requires Linux, keep this line on `next` and publish a later cross-platform version instead:
+Promote this platform-limited line only after Windows x64, macOS Apple Silicon, and real Lexmount service validation are complete. During preview, `next` is the documented channel even though npm also exposed `latest` for the bootstrap version. If stable product policy still requires Linux, publish a later cross-platform version and move `latest` only after that version is approved:
 
 ```bash
 npm dist-tag add @lexmount/dsh-browser@<version> latest

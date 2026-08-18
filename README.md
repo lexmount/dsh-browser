@@ -2,7 +2,7 @@
 
 Lexmount cloud browser tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). This package is a lightweight DSH Bundle: it registers native model tools and invokes the Rust `browser-cli`, but it does not contain a native executable, run an MCP server, or depend on the Lexmount Node.js SDK.
 
-> Status: pre-release implementation. The package has not been published to npm.
+> Status: `0.1.0-rc.0` is published on npm as the first preview. Use the `next` tag until Windows and macOS validation is complete.
 
 > **Current platform support:** Windows x64 and macOS Apple Silicon only. Linux and macOS Intel do not currently have official downloadable `browser-cli` assets and are not supported by this pre-release.
 
@@ -33,13 +33,15 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 
 ## Install
 
-After the first npm pre-release is available:
+Install the current npm pre-release:
 
 ```bash
 corepack enable pnpm
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
 ```
+
+Keep `@next` in preview installations; do not rely on npm's implicit `latest` tag until this release line is formally promoted.
 
 DSH RC.6 delegates plugin installation to a `pnpm` executable on `PATH`; it does not bundle that executable. If Corepack cannot create the shim, install pnpm through the normal Node package-manager setup and verify `pnpm --version` first.
 

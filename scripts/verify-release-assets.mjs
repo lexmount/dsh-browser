@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
@@ -7,40 +8,38 @@ const source = JSON.parse(
 );
 const repositoryUrl = new URL(source.repository.replace(/\.git$/u, ""));
 assert.equal(repositoryUrl.hostname, "github.com", "native source must be on GitHub");
-const [owner, repository] = repositoryUrl.pathname.split("/").filter(Boolean);
-assert.ok(owner && repository, "native source repository URL is invalid");
-const githubHeaders = {
-  accept: "application/vnd.github+json",
-  ...(process.env.GITHUB_TOKEN
-    ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-    : {}),
-};
-const tagResponse = await fetch(
-  `https://api.github.com/repos/${owner}/${repository}/git/ref/tags/v${source.version}`,
+assert.equal(
+  repositoryUrl.pathname.split("/").filter(Boolean).length,
+  2,
+  "native source repository URL is invalid",
+);
+const tagName = `refs/tags/v${source.version}`;
+const tagResult = spawnSync(
+  "git",
+  ["ls-remote", "--tags", source.repository, tagName, `${tagName}^{}`],
   {
-    headers: githubHeaders,
-    redirect: "error",
-    signal: AbortSignal.timeout(30_000),
+    encoding: "utf8",
+    env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+    shell: false,
+    timeout: 30_000,
+    windowsHide: true,
   },
 );
-assert.equal(tagResponse.ok, true, `browser-cli tag returned HTTP ${tagResponse.status}`);
-const tagRef = await tagResponse.json();
-let releaseCommit = tagRef.object?.sha;
-if (tagRef.object?.type === "tag") {
-  const annotatedTagResponse = await fetch(tagRef.object.url, {
-    headers: githubHeaders,
-    redirect: "error",
-    signal: AbortSignal.timeout(30_000),
-  });
-  assert.equal(
-    annotatedTagResponse.ok,
-    true,
-    `annotated browser-cli tag returned HTTP ${annotatedTagResponse.status}`,
-  );
-  const annotatedTag = await annotatedTagResponse.json();
-  assert.equal(annotatedTag.object?.type, "commit", "browser-cli tag must resolve to a commit");
-  releaseCommit = annotatedTag.object?.sha;
+if (tagResult.error !== undefined || tagResult.status !== 0) {
+  throw tagResult.error ?? new Error(tagResult.stderr || "git ls-remote failed");
 }
+const remoteTags = new Map(
+  tagResult.stdout
+    .trim()
+    .split(/\r?\n/u)
+    .filter(Boolean)
+    .map((line) => {
+      const [commit, reference] = line.split(/\s+/u);
+      return [reference, commit];
+    }),
+);
+const releaseCommit = remoteTags.get(`${tagName}^{}`) ?? remoteTags.get(tagName);
+assert.ok(releaseCommit, `browser-cli tag v${source.version} does not exist`);
 assert.equal(releaseCommit, source.commit, "browser-cli tag does not match native source commit");
 
 const baseUrl = source.download.baseUrl.replace(/\/$/u, "");
