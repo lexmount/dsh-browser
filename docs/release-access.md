@@ -4,7 +4,7 @@ Observed on 2026-08-18. These are external publication and account facts, not br
 
 ## Confirmed available
 
-- `browser-cli` v1.1.12 is an official public tag at commit `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`.
+- `browser-cli` v1.1.13 is an official public tag at commit `3af544780365309feae97d51b631070e7ca73762`.
 - Its GitHub release and COS path publicly expose the two assets claimed by this npm pre-release: Windows x64 and macOS ARM64.
 - `npm run native:assets` downloads both files and verifies their pinned SHA-256 digests.
 - npm account `lexmount` has read-write access to `@lexmount/dsh-browser`.
