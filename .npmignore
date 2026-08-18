@@ -3,4 +3,3 @@ scripts/
 src/
 test/
 tsconfig.json
-vendor/**/.gitkeep

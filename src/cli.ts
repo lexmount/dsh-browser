@@ -86,8 +86,13 @@ export interface BrowserCliRunnerOptions {
   killGraceMs?: number;
 }
 
+export interface BrowserCliPathResolver {
+  resolve(signal: AbortSignal): Promise<{ path: string }>;
+  dispose?(): void;
+}
+
 export class BrowserCliRunner {
-  readonly path: string;
+  readonly source: string | BrowserCliPathResolver;
   readonly environment: NodeJS.ProcessEnv;
   readonly killGraceMs: number;
 
@@ -97,8 +102,11 @@ export class BrowserCliRunner {
   >();
   #disposed = false;
 
-  constructor(path: string, options: BrowserCliRunnerOptions = {}) {
-    this.path = path;
+  constructor(
+    source: string | BrowserCliPathResolver,
+    options: BrowserCliRunnerOptions = {},
+  ) {
+    this.source = source;
     this.environment = options.environment ?? process.env;
     this.killGraceMs = options.killGraceMs ?? 2_000;
   }
@@ -111,8 +119,22 @@ export class BrowserCliRunner {
       throw abortError(signal.reason);
     }
 
+    const path =
+      typeof this.source === "string"
+        ? this.source
+        : (await this.source.resolve(signal)).path;
+    if (this.#disposed) {
+      throw new BrowserCliError(
+        "Lexmount browser plugin is shutting down.",
+        "plugin_disposed",
+      );
+    }
+    if (signal.aborted) {
+      throw abortError(signal.reason);
+    }
+
     return await new Promise<JsonValue>((resolvePromise, rejectPromise) => {
-      const child = spawn(this.path, [...arguments_], {
+      const child = spawn(path, [...arguments_], {
         env: this.environment,
         shell: false,
         stdio: ["ignore", "pipe", "pipe"],
@@ -205,6 +227,9 @@ export class BrowserCliRunner {
 
   dispose(): void {
     this.#disposed = true;
+    if (typeof this.source !== "string") {
+      this.source.dispose?.();
+    }
     for (const terminate of this.#terminators.values()) {
       terminate();
     }

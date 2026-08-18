@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
-import { resolveBrowserCli } from "../lib/binary.js";
+import { BrowserCliResolver } from "../lib/binary.js";
 import { BrowserCliRunner } from "../lib/cli.js";
 import { TOOL_SPECS } from "../lib/tool-specs.js";
 
@@ -19,13 +19,13 @@ const sampleArguments = {
   method: "Runtime.evaluate",
 };
 
-test("resolves and executes the packaged native browser CLI", async () => {
-  const binary = resolveBrowserCli();
-  const runner = new BrowserCliRunner(binary.path);
+test("downloads, resolves, and executes the native browser CLI", async () => {
+  const binary = new BrowserCliResolver();
+  const runner = new BrowserCliRunner(binary);
   const signal = new AbortController().signal;
   try {
     const version = await runner.run(["version"], signal);
-    assert.equal(version.version, "1.1.11");
+    assert.equal(version.version, "1.1.12");
 
     const status = await runner.run(["auth", "status"], signal);
     assert.equal(typeof status.valid, "boolean");
@@ -36,18 +36,23 @@ test("resolves and executes the packaged native browser CLI", async () => {
   }
 });
 
-test("every registered tool maps to a command accepted by browser-cli", () => {
-  const binary = resolveBrowserCli();
-  for (const spec of TOOL_SPECS) {
-    const result = spawnSync(
-      binary.path,
-      [...spec.argv(sampleArguments), "--help"],
-      { encoding: "utf8", shell: false, timeout: 10_000, windowsHide: true },
-    );
-    assert.equal(
-      result.status,
-      0,
-      `${spec.name}: ${result.error?.message ?? result.stderr ?? result.stdout}`,
-    );
+test("every registered tool maps to a command accepted by browser-cli", async () => {
+  const resolver = new BrowserCliResolver();
+  try {
+    const binary = await resolver.resolve(new AbortController().signal);
+    for (const spec of TOOL_SPECS) {
+      const result = spawnSync(
+        binary.path,
+        [...spec.argv(sampleArguments), "--help"],
+        { encoding: "utf8", shell: false, timeout: 10_000, windowsHide: true },
+      );
+      assert.equal(
+        result.status,
+        0,
+        `${spec.name}: ${result.error?.message ?? result.stderr ?? result.stdout}`,
+      );
+    }
+  } finally {
+    resolver.dispose();
   }
 });

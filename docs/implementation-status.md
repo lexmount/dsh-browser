@@ -1,31 +1,43 @@
 # Implementation status
 
-Status captured on 2026-08-17 for `@lexmount/dsh-browser@0.1.0-rc.0`. This file distinguishes implemented behavior from release-complete validation.
+Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The npm wrapper is implemented locally; stable publication is still blocked by native assets and external validation.
 
 ## Completed locally
 
 - DSH Bundle manifest and Cordis patch implemented.
 - All 31 frozen browser-cli capabilities registered as DSH native tools, including evaluate and raw CDP.
-- Node adapter uses `spawn` argument arrays with `shell: false`, forwards `AbortSignal`, terminates owned children, parses the existing JSON envelope, preserves CLI error codes through DSH's `HarnessError` channel, and recursively redacts secrets and CDP control URLs.
-- Current-platform binary selection validates the exact pinned repository, commit, CLI version, target, package path, executable format, executable permission, and SHA-256 before registration; Linux additionally rejects ELF files with a dynamic program interpreter.
-- Screenshot output is stored through the DSH image attachment service; temporary screenshot files and their non-durable paths are removed. RC.6 PDF/download attachment limitations are documented separately.
-- `npm run check` passes 19 automated tests covering binary rejection paths, protocol parsing, structured and labeled-text redaction, cancellation, forced cleanup of a child that ignores graceful termination, schema/argv mapping, 31-tool registration, and screenshot cleanup/attachment rendering.
-- The complete Node check passes on both the declared minimum Node `22.14.0` (npm `10.9.2`) and the CI-pinned Node `22.22.2`; CI runs both versions.
-- The pinned `browser-cli-rs` commit passes `cargo fmt --check`, all 9 Rust unit tests, and Clippy with warnings denied under Rust 1.93.1 on this Linux host.
-- A true static-PIE `x86_64-unknown-linux-musl` binary was built from the pinned Rust commit with the Ubuntu `musl`, `musl-dev`, and `musl-tools` 1.2.4-2 packages extracted under `/tmp` (no system package installation). `file`, `ldd`, and ELF program-header checks confirm that it is x86-64, statically linked, and has no dynamic interpreter. Its staged SHA-256 is `a148a44421555414a5bf69a73a73995a238ed267a4b2c0862f2a1fd62f0b83e3`.
-- The staged Linux binary passes the package manifest verifier, resolves from the packaged runtime, reports browser-cli `1.1.11`, returns the expected JSON protocol envelope, and accepts the command mapping for every one of the 31 registered tools.
-- `npm pack` produces a development tarball containing the compiled Bundle, native-source pin, Linux binary, and matching manifest. The tarball is not a release artifact because the Windows and macOS binaries have not yet been assembled.
-- A fresh disposable DSH `0.1.0-rc.6` Web profile successfully installed the Linux development tarball through the real `dsh plugin`/pnpm path without peer-dependency warnings. A separate add/remove composition check produced exactly one `lexmount-browser` row after installation and no Lexmount row after removal.
-- The clean profile booted through the real DSH Web launcher. DSH's live plugin-inventory API reported `@lexmount/dsh-browser` as `enabled: true` and `fiberPhase: active`. Of 134 inventory entries, all 108 enabled entries were active and the other 26 were intentionally disabled/unmounted; no enabled entry was failed, pending, loading, or unloading. The installed package exported 31 distinct tool names, and its `BrowserCliError` shared the running host's `HarnessError` identity. Combined with the 31-definition registration test, this proves that the packaged plugin reached and completed its registration path rather than merely appearing in the composed YAML.
-- The same tarball installs into a fresh Headless profile without peer warnings, composes exactly one `lexmount-browser` row, and reaches the Headless application's native help path. An authenticated Headless task remains part of service E2E rather than this load check.
-- CI and release workflow YAML parse successfully. Release assembly requires all four native artifacts, builds and starts each macOS architecture on a matching native runner, validates architecture and hashes, creates one npm tarball, and passes that exact tarball through the manual approval gate without rebuilding. The npm OIDC job has read-only repository access; GitHub Release creation runs afterward in a separate job that has no OIDC permission.
+- Node adapter uses `spawn` argument arrays with `shell: false`, forwards cancellation, terminates owned children, parses the existing JSON envelope, preserves CLI error codes through DSH's `HarnessError` channel, and recursively redacts secrets and CDP control URLs.
+- Package loading and tool registration do not access the network or require a native executable.
+- First tool use resolves the current platform, checks an administrator-provided `LEXMOUNT_BROWSER_CLI_PATH` or a versioned user cache, then downloads from the pinned COS release when needed.
+- Download installation verifies the exact `SHA256SUMS` entry, a 128 MiB size limit, executable format/architecture, static Linux ELF contract, CLI version, and cache metadata before atomically replacing the cached file.
+- Concurrent first calls share one resolution; cancellation stops the download when no waiter remains; plugin disposal cancels resolution and terminates active child processes.
+- Screenshot output is stored through the DSH image attachment service; temporary screenshot files are removed. RC.6 PDF/download attachment limitations are documented separately.
+- `npm run check` passes 21 automated tests covering source/target pins, deferred unsupported-platform errors, checksum parsing, executable rejection paths, explicit-path resolution, protocol parsing, redaction, cancellation, forced cleanup, schema/argv mapping, 31-tool registration, and screenshot cleanup.
+- `npm run package:verify` reports a 24-file npm payload and rejects any native executable path. The current unpacked wrapper is about 105 KiB.
+- `npm run native:assets` resolves the official v1.1.12 tag to the pinned commit, downloads the Windows x64 and macOS ARM64 assets from COS, and verifies both SHA-256 digests successfully.
+- `npm audit --omit=dev` reports zero known vulnerabilities.
+- The release workflow uses tag-only assembly, pins Node 24.15.0 and npm 12.0.2, creates one tarball, verifies it contains no executable, and passes the exact artifact through the npm environment approval gate without rebuilding.
+- The previous bundled Linux binary and all `vendor/` package entries have been removed from the working tree.
+- A newly packed lightweight tarball installs through the real DSH RC.6 `dsh plugin`/pnpm path into clean disposable Web and Headless profiles without peer warnings. Both composed configs contain exactly one `lexmount-browser` entry.
+- The clean Web profile boots successfully on an OS-assigned port and returns HTTP 200. This proves unsupported Linux is deferred until tool resolution instead of breaking Bundle registration. The Headless profile reaches its native help path. Neither load path downloads a CLI.
+
+## Native source currently pinned
+
+- repository: `https://github.com/lexmount/browser-cli-rs.git`;
+- version: `1.1.12`;
+- tag commit: `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`;
+- COS base: `https://cli-bin-1377899528.cos.ap-nanjing.myqcloud.com/releases/browser-cli/v1.1.12`.
+
+The upstream v1.1.12 Action completed successfully and published macOS ARM64 and Windows x64. Those are the only platforms claimed by this npm pre-release. Linux x64 and macOS Intel are deferred to a new native and npm version.
 
 ## Not yet complete
 
+- Because the current host is Linux and Linux is not supported by this pre-release, the runtime download/native integration test must be completed on Windows x64 and macOS Apple Silicon.
 - Real Lexmount authentication, Session, Context, browser action, screenshot, PDF/download, cancellation, cleanup, and Headless service E2E remain pending.
-- This host currently has neither a browser-cli credential file nor Lexmount credential environment variables, so the real service E2E must begin with interactive PKCE login.
-- Windows x64 and both macOS architectures remain CI/manual-platform work. No claim is made that they passed from this Linux host.
-- macOS signing/notarization, GitHub environments/secrets, npm login/scope ownership, the first npm publish, Trusted Publishing, public repository access, and provenance remain external release gates. See [release access readiness](release-access.md).
-- DSH RC.6 cannot enforce the frozen architecture's generic per-tool side-effect metadata or generic PDF/download attachments. See [DSH RC.6 integration gaps](dsh-rc6-gaps.md).
+- Windows x64 and macOS Apple Silicon remain manual-platform work. No claim is made that they passed from this Linux host.
+- `https://github.com/lexmount/dsh-browser` is private and empty, so this repository's CI/release workflow cannot run yet.
+- The current machine is not authenticated to npm, `@lexmount/dsh-browser` returns npm 404, and the first package version must be published interactively before Trusted Publishing can be configured.
+- npm scope permission, account 2FA, GitHub `npm` environment/reviewers, repository visibility, and MIT license approval remain external release gates.
+- DSH RC.6 cannot enforce generic per-tool side-effect metadata or generic PDF/download attachments. See [DSH RC.6 integration gaps](dsh-rc6-gaps.md).
 
-The package is therefore an implemented pre-release working tree, not yet a stable publishable artifact.
+The npm artifact is structurally release-ready for its stated two-platform pre-release. External repository, npm authentication, legal approval, DSH regression, and real Windows/macOS validation still block publication.

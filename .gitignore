@@ -3,8 +3,3 @@ lib/
 coverage/
 dist/
 *.tgz
-
-# Release binaries and their generated manifest are assembled by CI.
-vendor/manifest.json
-vendor/*/browser-cli
-vendor/*/browser-cli.exe

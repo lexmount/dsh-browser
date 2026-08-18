@@ -1,40 +1,42 @@
 # Release access readiness
 
-Observed on 2026-08-17. These are external-state prerequisites, not implementation claims. Re-run the checks immediately before the first publication.
+Observed on 2026-08-18. These are external prerequisites, not package implementation claims.
 
-## Confirmed blockers
+## Confirmed available
 
-1. `https://github.com/lexmount/dsh-browser` is currently **private and empty**. It has no remote default branch, so the workflows in this working tree do not exist on GitHub and cannot run yet. Pushing the initial branch is a separate external action and requires explicit approval.
-2. A private source repository can use npm Trusted Publishing, but npm does not generate provenance for a public package published from a private repository. It also makes the package's GitHub homepage, issue tracker, source, and Release artifacts inaccessible to ordinary npm users. Make the repository public before release if those public access and provenance properties are required; changing visibility requires an explicit owner decision.
-3. The local npm CLI returns `ENEEDAUTH` for `npm whoami`. The publisher must run `npm login`, complete account-level 2FA, and verify permission to publish public packages in the `@lexmount` scope.
-4. `@lexmount/dsh-browser` currently returns npm `E404`, so the first version has not been published. npm cannot configure a Trusted Publisher or staged publishing for a package that does not yet exist. The first verified tarball must be published interactively with 2FA.
-5. The GitHub repository currently has no repository Actions secrets, variables, or environments. The `macos-release` environment and its five signing/notarization secrets must exist before macOS jobs can pass:
-   - `MACOS_DEVELOPER_ID_APPLICATION_P12_BASE64`
-   - `MACOS_DEVELOPER_ID_P12_PASSWORD`
-   - `APPLE_NOTARY_APPLE_ID`
-   - `APPLE_NOTARY_TEAM_ID`
-   - `APPLE_NOTARY_APP_PASSWORD`
-6. The `npm` environment does not exist. Create it with required reviewers before enabling workflow publication, then configure npm Trusted Publishing for organization `lexmount`, repository `dsh-browser`, workflow filename `release.yml`, environment `npm`, and the `npm publish` action.
-7. DSH RC.6's plugin manager shells out to `pnpm`. This development host can run pnpm only through `corepack pnpm`; there is no `pnpm` executable on `PATH`, so an unmodified local `dsh plugin` command currently exits with its missing-pnpm diagnostic. Enable a pnpm shim before local installation testing. End-user installation documentation must retain this prerequisite until DSH changes its plugin manager.
-8. `package.json` and `LICENSE` currently declare MIT with `Copyright (c) 2026 Lexmount`. The owner or legal reviewer must confirm that public licensing choice before the first public npm publication.
+- `browser-cli` v1.1.12 is an official public tag at commit `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`.
+- Its GitHub release and COS path publicly expose the two assets claimed by this npm pre-release: Windows x64 and macOS ARM64.
+- `npm run native:assets` downloads both files and verifies their pinned SHA-256 digests.
+- `https://github.com/lexmount/dsh-browser` exists and the current GitHub identity has admin permission.
+- The required DSH RC.6 packages are installable from the public npm registry.
 
-## Access that could not be verified
+## Confirmed blockers before publication
 
-- The current GitHub credential can read this private repository, but it cannot enumerate Lexmount organization-level Actions secrets or variables (`HTTP 403`). Organization-provided macOS secrets may exist, but their availability to this repository is unverified.
-- npm scope ownership and team permissions cannot be checked until this machine is authenticated to npm.
-- Apple certificate validity, notarization credentials, and environment reviewer configuration cannot be verified without the GitHub environment and a workflow run.
+1. The `dsh-browser` GitHub repository is private and empty. The local source, CI, and release workflow have not been pushed, so no npm assembly artifact can yet be produced by GitHub Actions.
+2. The local npm session is not authenticated: `npm whoami` returns `ENEEDAUTH`.
+3. `@lexmount/dsh-browser` returns npm 404. npm requires the package to exist before a Trusted Publisher can be configured, so the first tarball must be published interactively with account 2FA.
+4. npm ownership/team permission for the public `@lexmount` scope cannot be verified until login.
+5. The GitHub `npm` environment and required reviewer policy cannot be created/verified until the repository has its workflow branch. No npm token should be added; later publishes use OIDC.
+6. `package.json` and `LICENSE` declare MIT with `Copyright (c) 2026 Lexmount`. The owner or legal reviewer must approve that public license before first publication.
+7. The new lightweight tarball still needs Windows x64 and macOS Apple Silicon manual validation plus real Lexmount service E2E.
 
-## Confirmed available dependencies
+## Repository visibility
 
-- `https://github.com/lexmount/browser-cli-rs` is public and the pinned commit is readable.
-- GitHub Actions is enabled for `dsh-browser`. Its current policy allows all actions and does not require action SHA pinning.
-- The required DSH RC.6 packages are installable from the public npm registry in the current development environment.
+A private source repository can publish a public npm package through Trusted Publishing, but npm will not create public provenance for it. It also prevents ordinary npm users from opening source, issues, and GitHub Release links. Make the repository public before release if public provenance and public support links are required; visibility changes remain an owner decision.
 
-## Owner actions before first release
+## npm versions
 
-1. Confirm the MIT license and copyright holder text.
-2. Decide whether the GitHub repository becomes public. Public is recommended for a public user-facing plugin, public issues/releases, and npm provenance.
-3. Approve and push the initial `main` branch.
-4. Configure the two GitHub environments and macOS secrets, then run the assembly workflow with `publish=false`.
-5. Authenticate npm, verify `@lexmount` publish permission and 2FA, and publish the first manually validated tarball.
-6. Configure npm Trusted Publishing only after the package exists; then test it with a new pre-release version rather than reusing the first version.
+- The current shell uses Node v22.21.0 and npm 10.9.4, which is too old for npm Trusted Publishing.
+- Node v22.22.2 with npm 12.0.2 is already installed locally, but the user must select that Node version before interactive npm administration.
+- The release workflow avoids local ambiguity by pinning Node 24.15.0 and npm 12.0.2. npm Trusted Publishing requires npm 11.5.1 or later.
+
+## Owner actions
+
+1. Confirm the MIT license and decide private versus public GitHub visibility.
+2. Review and authorize the initial push to `lexmount/dsh-browser`.
+3. Run CI and the tag-only release workflow with `publish=false`.
+4. Validate the exact Action artifact on Windows x64 and macOS Apple Silicon.
+5. Select Node 22.22.2 or newer, run `npm login`, complete 2FA, and verify `npm whoami` plus `@lexmount` publish permission.
+6. Publish the verified tarball once with `--access public --tag next`.
+7. Configure npm Trusted Publishing for `lexmount/dsh-browser`, workflow `release.yml`, environment `npm`, and allowed action `npm publish`.
+8. Create the GitHub `npm` environment with reviewers and test OIDC using a new unused npm version.

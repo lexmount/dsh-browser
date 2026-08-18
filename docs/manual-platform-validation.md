@@ -1,14 +1,25 @@
 # Manual platform validation
 
-Run this checklist against the exact npm tarball that will be promoted. Record OS version, CPU architecture, Node version, DSH version, package version, browser-cli version, and the tarball SHA-256.
+Run this checklist against the exact npm tarball that will be published. The current pre-release supports Windows x64 and macOS Apple Silicon only. Record OS version, CPU architecture, Node version, DSH version, npm package version, browser-cli version, npm tarball SHA-256, downloaded asset name, and downloaded asset SHA-256.
 
-## Installation and loading
+## Package and installation
 
-1. Start from a clean disposable DSH profile.
-2. Install the tarball with `dsh plugin --profile <profile> add <tarball>`.
-3. Run `dsh --profile <profile> --dump-config` and confirm one `lexmount-browser` row.
-4. Start the Web profile and confirm all 31 `lexmount_*` tools register without warnings.
-5. Remove the Bundle and confirm the patch layer and tools disappear.
+1. Verify the tarball against the workflow `SHA256SUMS`.
+2. List the tarball and confirm it contains `lib/`, `native-source.json`, Bundle metadata, docs, and license, but no `vendor/`, `browser-cli`, or `browser-cli.exe`.
+3. Start from a clean disposable DSH profile and a clean `LEXMOUNT_BROWSER_CLI_CACHE_DIR`.
+4. Install the tarball with `dsh plugin --profile <profile> add <tarball>`.
+5. Confirm installation and tool registration do not download a native asset.
+6. Start the Web profile and confirm all 31 `lexmount_*` tools register without warnings.
+7. Remove the Bundle and confirm its patch layer and tools disappear.
+
+## First download and cache
+
+1. Reinstall, run `lexmount_doctor`, and confirm the first tool call downloads exactly the current platform asset from the pinned v1.1.12 COS path.
+2. Compare the cached executable hash with its `SHA256SUMS` entry.
+3. Confirm cache metadata records v1.1.12, commit `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`, platform target, asset name, and digest.
+4. Disconnect outbound network access, restart DSH, and confirm the verified cache still runs.
+5. Corrupt a disposable copy of the cache, restore network access, and confirm the next call refuses the corrupt file and replaces it from the pinned release.
+6. Cancel a first-use download and confirm no temporary executable is selected or left as the active cache entry.
 
 ## Authentication
 
@@ -47,21 +58,19 @@ Run this checklist against the exact npm tarball that will be promoted. Record O
 
 ### Windows x64
 
-- SmartScreen/antivirus behavior is documented for the unsigned first-release binary.
-- Paths containing spaces and non-ASCII characters work.
-- Cancellation leaves no `browser-cli.exe` process.
+- Asset: `browser-cli-v1.1.12-x86_64-pc-windows-msvc.exe`.
+- SmartScreen/antivirus behavior is documented for the unsigned binary.
+- Cache paths containing spaces and non-ASCII characters work.
+- The CLI reports v1.1.12 and cancellation leaves no `browser-cli.exe` process.
 
-### macOS ARM64 and x64
+### macOS Apple Silicon
 
+- Asset: `browser-cli-v1.1.12-aarch64-apple-darwin`.
 - `codesign --verify --strict` succeeds.
 - Gatekeeper accepts the notarized executable on a clean machine.
-- Both native architectures report browser-cli `1.1.11`.
+- The process is native arm64 and reports browser-cli v1.1.12.
 
-### Linux x64
-
-- `file` reports a musl-targeted x86-64 ELF and `ldd` reports a static executable.
-- Run on at least one Debian/Ubuntu host and one non-glibc distribution or minimal container.
-- System-browser launch and CA certificate discovery work in a desktop environment.
+macOS Intel and Linux are not part of this pre-release validation because the pinned native release has no assets for them.
 
 ## Headless profile
 

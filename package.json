@@ -18,9 +18,6 @@
     "lib/**/*.d.ts",
     "cordis.patch.yml",
     "native-source.json",
-    "vendor/manifest.json",
-    "vendor/*/browser-cli",
-    "vendor/*/browser-cli.exe",
     "docs/*.md",
     "README.md",
     "LICENSE"
@@ -37,8 +34,9 @@
     "test": "npm run build && node --test test/binary.test.mjs test/cli.test.mjs test/redact.test.mjs test/tool-specs.test.mjs test/tools.test.mjs",
     "test:native": "npm run build && node --test test/native-cli.test.mjs",
     "check": "npm run typecheck && npm test",
-    "vendor:verify": "node ./scripts/verify-vendor.mjs --current",
-    "release:check": "npm run check && node ./scripts/verify-vendor.mjs --all && npm run test:native",
+    "native:assets": "node ./scripts/verify-release-assets.mjs",
+    "package:verify": "node ./scripts/verify-package.mjs",
+    "release:check": "npm run check && npm run package:verify && npm run native:assets",
     "prepack": "npm run build",
     "prepublishOnly": "npm run release:check"
   },

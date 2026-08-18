@@ -125,7 +125,7 @@ function presentation(
 export const TOOL_SPECS: readonly CliToolSpec[] = [
   {
     name: "lexmount_browser_version",
-    description: "Return the bundled Lexmount browser CLI version.",
+    description: "Return the pinned Lexmount browser CLI version.",
     parameters: noParameters,
     argv: () => ["version"],
     presentation: presentation("Check Lexmount browser version", "read"),

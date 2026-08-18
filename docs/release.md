@@ -1,30 +1,89 @@
 # Release procedure
 
-## One-time npm setup
+The npm package is a wrapper only. Native executables are released first by `lexmount/browser-cli-rs`; this repository never builds or embeds them.
 
-1. Confirm the publisher controls the `@lexmount` npm scope and has account 2FA enabled.
-2. Complete the first `0.1.0-rc.*` publication interactively because npm cannot configure a Trusted Publisher for a package that does not yet exist. Publish the exact tarball downloaded from the workflow; do not run `npm pack` again.
-3. In the npm package settings, bind Trusted Publishing to this GitHub repository and `.github/workflows/release.yml`.
-4. Configure the GitHub `npm` environment and the `macos-release` signing/notarization secrets used by the workflow.
+## Required release order
 
-No long-lived npm token is required after Trusted Publishing is configured.
-Trusted Publishing automatically emits provenance only when the source repository is public. The package does not force `publishConfig.provenance=true`, because that would break the first interactive publication and is unsupported while this repository remains private. See [release access readiness](release-access.md).
+1. Publish the pinned `browser-cli` version from `lexmount/browser-cli-rs`.
+2. Confirm its version tag resolves to the commit in `native-source.json`.
+3. Confirm the COS `SHA256SUMS` and both currently supported assets are public:
+   - `aarch64-apple-darwin`;
+   - `x86_64-pc-windows-msvc.exe`.
+4. Run `npm run release:check`. It verifies the lightweight package, the GitHub tag/commit, and downloads both remote assets to verify their published SHA-256 digests.
+5. Only then tag and assemble `@lexmount/dsh-browser`.
 
-## Pre-release
+The current npm pre-release supports Windows x64 and macOS Apple Silicon only. Linux x64 and macOS Intel require a later browser-cli release and a new npm package version.
 
-1. Update `package.json` to the intended pre-release version.
-2. Keep `native-source.json` pinned to a reviewed browser-cli commit and matching CLI version.
-3. Create and push the matching version tag, for example `v0.1.0-rc.0`.
-4. For the first package version, run `assemble-release` on that tag with `publish=false`, download the `npm-package` artifact, and complete the manual platform checklist against that exact tarball. Log in locally and publish that downloaded tarball with `--access public --tag next`, then create a GitHub Release containing the same tarball, `SHA256SUMS`, and `manifest.json`.
-5. After npm Trusted Publishing is configured, run `assemble-release` on the matching version tag with `publish=true` and `npm_tag=next`. The `npm` GitHub environment must require reviewer approval.
-6. While the publish job is waiting for environment approval, download the completed `npm-package` artifact and validate that exact tarball on all required platforms. Approve the environment only after the validation record is complete. The waiting job publishes the same artifact without rebuilding it; only after npm succeeds does a separate, non-OIDC job attach the tarball, `SHA256SUMS`, and native manifest to the matching GitHub Release.
+## GitHub Action: assemble and publish the npm wrapper
+
+`.github/workflows/release.yml` is a manually dispatched, tag-only workflow:
+
+1. `assemble` checks that the selected ref is exactly `v<package.json version>`.
+2. It uses Node 24.15.0 and pins npm 12.0.2. npm Trusted Publishing requires npm 11.5.1 or later.
+3. `npm ci` installs locked development dependencies.
+4. `npm run release:check` runs Node tests, verifies that the npm file list contains no executable, and fully downloads both supported remote assets to compare them with the pinned checksum manifest.
+5. `npm pack` produces one lightweight tarball. The workflow rejects any `package/vendor/`, `browser-cli`, or `browser-cli.exe` entry.
+6. The tarball, `SHA256SUMS`, and `native-source.json` become one immutable `npm-package` artifact.
+7. With `publish=false`, the workflow stops after artifact creation for manual review.
+8. With `publish=true`, the `npm` environment approval gate releases that exact artifact through OIDC; no rebuild occurs.
+9. Only after npm succeeds does a separate job attach the same tarball, checksum, and source pin to the matching GitHub Release.
+
+The workflow never needs Rust, Apple signing secrets, COS credentials, or native build runners. Those belong to the upstream browser-cli release.
+
+## First npm publication
+
+`@lexmount/dsh-browser` does not yet exist on npm. npm requires a package to exist before a Trusted Publisher can be configured, so the first version cannot use this repository's OIDC publish job.
+
+1. Confirm the publisher controls the `@lexmount` scope and account-level 2FA is enabled.
+2. Push the reviewed source and tag, then run `assemble-release` with `publish=false` on that exact tag.
+3. Download the `npm-package` artifact and verify `SHA256SUMS`.
+4. Complete Windows x64 and macOS Apple Silicon validation against that exact tarball.
+5. Log in interactively and publish the downloaded tarball without repacking:
+
+   ```bash
+   npm login
+   npm whoami
+   npm publish ./lexmount-dsh-browser-0.1.0-rc.0.tgz --access public --tag next
+   ```
+
+6. Create the matching GitHub Release with the same tarball, `SHA256SUMS`, and `native-source.json`.
+
+The current machine is not logged in to npm; `npm whoami` returns `ENEEDAUTH`. That is an external first-publish prerequisite, not a package-code defect.
+
+## Configure npm Trusted Publishing
+
+After the package exists, configure its Trusted Publisher on npmjs.com with:
+
+| Field | Value |
+| --- | --- |
+| Provider | GitHub Actions |
+| Organization | `lexmount` |
+| Repository | `dsh-browser` |
+| Workflow filename | `release.yml` |
+| Environment | `npm` |
+| Allowed action | `npm publish` |
+
+Create the GitHub `npm` environment with required reviewers. The publish job has `contents: read` and `id-token: write`; it uses a GitHub-hosted runner and no long-lived npm token.
+
+Once OIDC publishing is proven, set npm publishing access to require 2FA and disallow traditional tokens. Trusted publishing from a public source repository automatically produces npm provenance; a private repository can publish through OIDC but does not receive public provenance.
+
+## Later pre-releases
+
+1. Update `package.json` and `package-lock.json` to a new unused pre-release version.
+2. Update `native-source.json` and the matching constants/tests only when moving to a different reviewed browser-cli release.
+3. Commit, push, and create the exact `v<package version>` tag.
+4. Dispatch `assemble-release` with `publish=true` and `npm_tag=next`.
+5. While the `npm` environment waits for reviewer approval, download and validate the already assembled artifact.
+6. Approve only after the validation record is complete. The same bytes are published and attached to the GitHub Release.
+
+An npm name/version pair can never be reused, even after unpublishing. Do not rebuild or republish an existing version.
 
 ## Stable promotion
 
-Promote only after Windows x64, macOS ARM64, macOS x64, and Linux x64 validation records are complete and the open DSH host limitations are accepted for the release notes.
+Promote this platform-limited line only after Windows x64, macOS Apple Silicon, and real Lexmount service validation are complete. If stable product policy still requires Linux, keep this line on `next` and publish a later cross-platform version instead:
 
 ```bash
 npm dist-tag add @lexmount/dsh-browser@<version> latest
 ```
 
-Do not rebuild between pre-release validation and promotion. The npm version, tarball SHA-256, browser-cli commit, four binary hashes, GitHub run, and macOS notarization records must identify the same artifact set.
+Promotion changes only the dist-tag. It must not rebuild the package or native executable.
