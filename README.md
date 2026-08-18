@@ -29,7 +29,7 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 | macOS Intel | `x86_64-apple-darwin` | Not currently supported; asset missing |
 | Linux x64 | `x86_64-unknown-linux-musl` | Not currently supported; asset missing |
 
-`native-source.json` pins `browser-cli` v1.1.12 at commit `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`. This pre-release intentionally uses the two assets published by that immutable release. Adding Linux or macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
+`native-source.json` pins `browser-cli` v1.1.13 at commit `3af544780365309feae97d51b631070e7ca73762`. The Windows asset in this release statically links the C runtime. This pre-release intentionally uses the two assets published by that immutable release. Adding Linux or macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
 
 ## Install
 
@@ -175,7 +175,7 @@ npm run check
 npm run package:verify
 ```
 
-On a currently supported host, test a locally built v1.1.12 CLI without changing the package:
+On a currently supported host, test a locally built v1.1.13 CLI without changing the package:
 
 ```bash
 LEXMOUNT_BROWSER_CLI_PATH=/absolute/path/to/browser-cli npm run test:native

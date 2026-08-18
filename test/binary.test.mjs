@@ -80,7 +80,7 @@ test("selects only the two currently published platform keys", () => {
 });
 
 test("reads the exact asset checksum from a sha256sum manifest", () => {
-  const asset = "browser-cli-v1.1.12-x86_64-unknown-linux-musl";
+  const asset = "browser-cli-v1.1.13-x86_64-unknown-linux-musl";
   const digest = "a".repeat(64);
   assert.equal(
     checksumForAsset(`${"b".repeat(64)}  other\n${digest} *${asset}\n`, asset),

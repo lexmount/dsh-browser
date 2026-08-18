@@ -14,9 +14,9 @@ Run this checklist against the exact npm tarball that will be published. The cur
 
 ## First download and cache
 
-1. Reinstall, run `lexmount_doctor`, and confirm the first tool call downloads exactly the current platform asset from the pinned v1.1.12 COS path.
+1. Reinstall, run `lexmount_doctor`, and confirm the first tool call downloads exactly the current platform asset from the pinned v1.1.13 COS path.
 2. Compare the cached executable hash with its `SHA256SUMS` entry.
-3. Confirm cache metadata records v1.1.12, commit `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`, platform target, asset name, and digest.
+3. Confirm cache metadata records v1.1.13, commit `3af544780365309feae97d51b631070e7ca73762`, platform target, asset name, and digest.
 4. Disconnect outbound network access, restart DSH, and confirm the verified cache still runs.
 5. Corrupt a disposable copy of the cache, restore network access, and confirm the next call refuses the corrupt file and replaces it from the pinned release.
 6. Cancel a first-use download and confirm no temporary executable is selected or left as the active cache entry.
@@ -58,17 +58,18 @@ Run this checklist against the exact npm tarball that will be published. The cur
 
 ### Windows x64
 
-- Asset: `browser-cli-v1.1.12-x86_64-pc-windows-msvc.exe`.
+- Asset: `browser-cli-v1.1.13-x86_64-pc-windows-msvc.exe`.
+- The PE import table contains no `VCRUNTIME` or `api-ms-win-crt` dependency.
 - SmartScreen/antivirus behavior is documented for the unsigned binary.
 - Cache paths containing spaces and non-ASCII characters work.
-- The CLI reports v1.1.12 and cancellation leaves no `browser-cli.exe` process.
+- The CLI reports v1.1.13 and cancellation leaves no `browser-cli.exe` process.
 
 ### macOS Apple Silicon
 
-- Asset: `browser-cli-v1.1.12-aarch64-apple-darwin`.
+- Asset: `browser-cli-v1.1.13-aarch64-apple-darwin`.
 - `codesign --verify --strict` succeeds.
 - Gatekeeper accepts the notarized executable on a clean machine.
-- The process is native arm64 and reports browser-cli v1.1.12.
+- The process is native arm64 and reports browser-cli v1.1.13.
 
 macOS Intel and Linux are not part of this pre-release validation because the pinned native release has no assets for them.
 

@@ -1,6 +1,6 @@
 # Implementation status
 
-Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The first npm preview and its matching Git tag are published; stable support remains blocked by real Windows/macOS and Lexmount service validation.
+Status updated on 2026-08-18 for the `@lexmount/dsh-browser@0.1.0-rc.3` candidate. Earlier npm previews and their matching Git tags are published; stable support remains blocked by real Windows/macOS and Lexmount service validation.
 
 ## Completed and verified
 
@@ -14,7 +14,7 @@ Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The first 
 - Screenshot output is stored through the DSH image attachment service; temporary screenshot files are removed. RC.6 PDF/download attachment limitations are documented separately.
 - `npm run check` passes 21 automated tests covering source/target pins, deferred unsupported-platform errors, checksum parsing, executable rejection paths, explicit-path resolution, protocol parsing, redaction, cancellation, forced cleanup, schema/argv mapping, 31-tool registration, and screenshot cleanup.
 - `npm run package:verify` reports a 24-file npm payload and rejects any native executable path. The current unpacked wrapper is about 105 KiB.
-- `npm run native:assets` resolves the official v1.1.12 tag to the pinned commit, downloads the Windows x64 and macOS ARM64 assets from COS, and verifies both SHA-256 digests successfully.
+- `npm run native:assets` resolves the official v1.1.13 tag to the pinned commit, downloads the Windows x64 and macOS ARM64 assets from COS, and verifies both SHA-256 digests successfully. The Windows PE import table has no dynamic Visual C++ runtime dependency.
 - `npm audit --omit=dev` reports zero known vulnerabilities.
 - The release workflow uses tag-only assembly, pins Node 24.15.0 and npm 12.0.2, creates one tarball, verifies it contains no executable, and passes the exact artifact through the npm environment approval gate without rebuilding.
 - The previous bundled Linux binary and all `vendor/` package entries have been removed from the working tree.
@@ -28,11 +28,11 @@ Status captured on 2026-08-18 for `@lexmount/dsh-browser@0.1.0-rc.0`. The first 
 ## Native source currently pinned
 
 - repository: `https://github.com/lexmount/browser-cli-rs.git`;
-- version: `1.1.12`;
-- tag commit: `f0ad71be2fb7f34413a08a4eaf630dfd22c6c2a4`;
-- COS base: `https://cli-bin-1377899528.cos.ap-nanjing.myqcloud.com/releases/browser-cli/v1.1.12`.
+- version: `1.1.13`;
+- tag commit: `3af544780365309feae97d51b631070e7ca73762`;
+- COS base: `https://cli-bin-1377899528.cos.ap-nanjing.myqcloud.com/releases/browser-cli/v1.1.13`.
 
-The upstream v1.1.12 Action completed successfully and published macOS ARM64 and Windows x64. Those are the only platforms claimed by this npm pre-release. Linux x64 and macOS Intel are deferred to a new native and npm version.
+The upstream v1.1.13 Action completed successfully and published macOS ARM64 and Windows x64. Its Windows build statically links the C runtime. Those are the only platforms claimed by this npm pre-release. Linux x64 and macOS Intel are deferred to a new native and npm version.
 
 ## Not yet complete
 
