@@ -64,6 +64,8 @@ jobs:
             exit 1
           fi
           sha256sum "${tarball}" > SHA256SUMS
+      # upload-artifact and download-artifact version independently; their
+      # current Node 24 majors are v7 and v8 respectively.
       - uses: actions/upload-artifact@v7
         with:
           name: npm-package
@@ -110,13 +112,15 @@ jobs:
           fi
           tarball="${tarballs[0]}"
           package_spec="$(tar -xOf "${tarball}" package/package.json | node --input-type=module -e "let source = ''; for await (const chunk of process.stdin) source += chunk; const pkg = JSON.parse(source); process.stdout.write(pkg.name + '@' + pkg.version)")"
-          registry_dir="${RUNNER_TEMP}/published-package-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          registry_root="${RUNNER_TEMP}/published-package-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           log_file="${RUNNER_TEMP}/npm-publication-check.log"
-          mkdir -p "${registry_dir}"
+          mkdir -p "${registry_root}"
 
           for attempt in $(seq 1 150); do
-            if npm pack "${package_spec}" --ignore-scripts --pack-destination "${registry_dir}" >"${log_file}" 2>&1; then
-              mapfile -t published_tarballs < <(find "${registry_dir}" -maxdepth 1 -type f -name '*.tgz' -print)
+            attempt_dir="${registry_root}/${attempt}"
+            mkdir -p "${attempt_dir}"
+            if npm pack "${package_spec}" --ignore-scripts --pack-destination "${attempt_dir}" >"${log_file}" 2>&1; then
+              mapfile -t published_tarballs < <(find "${attempt_dir}" -maxdepth 1 -type f -name '*.tgz' -print)
               if [[ "${#published_tarballs[@]}" -ne 1 ]]; then
                 echo 'Expected exactly one tarball downloaded from the public npm registry' >&2
                 exit 1
