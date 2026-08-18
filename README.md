@@ -2,7 +2,7 @@
 
 Lexmount cloud browser tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). This package is a lightweight DSH Bundle: it registers native model tools and invokes the Rust `browser-cli`, but it does not contain a native executable, run an MCP server, or depend on the Lexmount Node.js SDK.
 
-> Status: `0.1.0-rc.0` is published on npm as the first preview. Use the `next` tag until Windows and macOS validation is complete.
+> Status: preview releases are published on npm under the `next` tag. Use `next` until Windows and macOS validation is complete.
 
 > **Current platform support:** Windows x64 and macOS Apple Silicon only. Linux and macOS Intel do not currently have official downloadable `browser-cli` assets and are not supported by this pre-release.
 
