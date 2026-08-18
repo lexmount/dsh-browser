@@ -168,6 +168,7 @@ jobs:
             prerelease+=(--prerelease)
           fi
           gh release create "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
             package/lexmount-dsh-browser-*.tgz \
             package/SHA256SUMS \
             package/native-source.json \
