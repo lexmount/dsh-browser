@@ -7,7 +7,7 @@ on:
         description: Publish the assembled package to npm through Trusted Publishing
         required: true
         type: boolean
-        default: false
+        default: true
       npm_tag:
         description: npm distribution tag
         required: true
