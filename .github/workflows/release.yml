@@ -100,7 +100,7 @@ jobs:
         working-directory: package
         run: sha256sum --check SHA256SUMS
       - name: Publish through npm Trusted Publishing
-        run: npm publish package/lexmount-dsh-browser-*.tgz --access public --tag '${{ inputs.npm_tag }}'
+        run: npm publish ./package/lexmount-dsh-browser-*.tgz --access public --tag '${{ inputs.npm_tag }}'
       - name: Verify the package is publicly installable
         shell: bash
         run: |
