@@ -28,7 +28,7 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 | macOS Apple Silicon | `aarch64-apple-darwin` | Supported |
 | macOS Intel | `x86_64-apple-darwin` | Not currently supported; asset missing |
 
-`native-source.json` pins `browser-cli` v1.1.13 at commit `3af544780365309fe97d51b631070e7ca73762`. The Windows asset in this release statically links the C runtime. This pre-release intentionally uses the two assets published by that immutable release. Adding macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
+`native-source.json` pins `browser-cli` v1.1.13 at commit `3af544780365309feae97d51b631070e7ca73762`. The Windows asset in this release statically links the C runtime. This pre-release intentionally uses the two assets published by that immutable release. Adding macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
 
 ## Install
 
