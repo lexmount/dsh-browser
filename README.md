@@ -2,9 +2,9 @@
 
 Lexmount cloud browser tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). This package is a lightweight DSH Bundle: it registers native model tools and invokes the Rust `browser-cli`, but it does not contain a native executable, run an MCP server, or depend on the Lexmount Node.js SDK.
 
-> Status: preview releases are published on npm under the `next` tag. Use `next` until Windows and macOS validation is complete.
+> Status: preview releases are published on npm under the `next` tag. Windows x64 and macOS Apple Silicon validation is complete; use `next` for preview installations.
 
-> **Current platform support:** Windows x64 and macOS Apple Silicon only. Linux and macOS Intel do not currently have official downloadable `browser-cli` assets and are not supported by this pre-release.
+> **Current platform support:** Windows x64 and macOS Apple Silicon only. macOS Intel is not supported by this pre-release.
 
 ## Runtime architecture
 
@@ -16,7 +16,7 @@ DSH Web / Headless
   → Lexmount API / CDP / cloud browser
 ```
 
-The Bundle registers tools without accessing the network. On the first tool call it selects the current OS/CPU asset, downloads the pinned `browser-cli` release and `SHA256SUMS` from Lexmount's versioned Tencent COS path, verifies the digest, executable format, static Linux contract, and CLI version, then installs it atomically in a user cache. Later calls and restarts reuse the verified cache, so an already populated cache works offline.
+The Bundle registers tools without accessing the network. On the first tool call it selects the current OS/CPU asset, downloads the pinned `browser-cli` release and `SHA256SUMS` from Lexmount's versioned Tencent COS path, verifies the digest, executable format/architecture, and CLI version, then installs it atomically in a user cache. Later calls and restarts reuse the verified cache, so an already populated cache works offline.
 
 The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users do not need Rust, Python, a browser driver, or an npm lifecycle script.
 
@@ -27,9 +27,8 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 | Windows x64 | `x86_64-pc-windows-msvc` | Supported |
 | macOS Apple Silicon | `aarch64-apple-darwin` | Supported |
 | macOS Intel | `x86_64-apple-darwin` | Not currently supported; asset missing |
-| Linux x64 | `x86_64-unknown-linux-musl` | Not currently supported; asset missing |
 
-`native-source.json` pins `browser-cli` v1.1.13 at commit `3af544780365309feae97d51b631070e7ca73762`. The Windows asset in this release statically links the C runtime. This pre-release intentionally uses the two assets published by that immutable release. Adding Linux or macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
+`native-source.json` pins `browser-cli` v1.1.13 at commit `3af544780365309feae97d51b631070e7ca73762`. The Windows asset in this release statically links the C runtime. This pre-release intentionally uses the two assets published by that immutable release. Adding macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
 
 ## Install
 
@@ -124,7 +123,6 @@ Default cache locations are:
 | --- | --- |
 | Windows | `%LOCALAPPDATA%\Lexmount\dsh-browser` |
 | macOS | `~/Library/Caches/Lexmount/dsh-browser` |
-| Linux | `${XDG_CACHE_HOME:-~/.cache}/lexmount/dsh-browser` |
 
 Set `LEXMOUNT_BROWSER_CLI_CACHE_DIR` to choose another cache root. `LEXMOUNT_BROWSER_CLI_PATH` is an explicit administrator/developer override for a preinstalled CLI; that path is still checked for format and version, but its trust is controlled by whoever sets the environment variable.
 
@@ -150,9 +148,9 @@ Screenshot results are persisted through the DSH image attachment service. PDF a
 - Model input is passed as a child-process argument array with `shell: false`; it is never concatenated into a shell command.
 - API keys, Authorization fields, `ws`, and Chrome DevTools WebSocket URLs are removed from returned data and diagnostics.
 - Tool guidance tells the model to obtain user confirmation before purchases, publication, destructive remote actions, and account/security changes.
-- JavaScript evaluation and raw CDP remain model-visible to match the existing WorkBuddy plugin.
+- JavaScript evaluation and raw CDP remain model-visible for advanced browser automation.
 
-DSH RC.6 does not expose MCP-style side-effect annotations on native tools. UI presentation categories are not permission enforcement. See [DSH RC.6 integration gaps](docs/dsh-rc6-gaps.md).
+DSH RC.6 does not expose MCP-style side-effect annotations on native tools. UI presentation categories are not permission enforcement.
 
 ## Known browser-cli limitations
 
@@ -188,4 +186,4 @@ npm run native:assets
 npm run test:native
 ```
 
-The `browser-cli-rs` repository owns native builds, macOS signing/notarization, checksums, and COS publication. This repository verifies those immutable inputs and publishes only the lightweight npm wrapper. See [release procedure](docs/release.md), [manual platform validation](docs/manual-platform-validation.md), [release access readiness](docs/release-access.md), and [implementation status](docs/implementation-status.md).
+The `browser-cli-rs` repository owns native builds, macOS signing/notarization, checksums, and COS publication. This repository verifies those immutable inputs and publishes only the lightweight npm wrapper.

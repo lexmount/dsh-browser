@@ -18,7 +18,6 @@
     "lib/**/*.d.ts",
     "cordis.patch.yml",
     "native-source.json",
-    "docs/*.md",
     "README.md",
     "LICENSE"
   ],
