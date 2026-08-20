@@ -162,7 +162,7 @@ export function platformKey(
     return key as SupportedPlatform;
   }
   throw new BrowserCliInstallationError(
-    `Unsupported platform ${key}. This @lexmount/dsh-browser pre-release currently supports win32-x64, darwin-arm64, and linux-x64 only.`,
+    `Unsupported platform ${key}. @lexmount/dsh-browser currently supports win32-x64, darwin-arm64, and linux-x64 only.`,
   );
 }
 
