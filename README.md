@@ -2,9 +2,9 @@
 
 Lexmount cloud browser tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). This package is a lightweight DSH Bundle: it registers native model tools and invokes the Rust `browser-cli`, but it does not contain a native executable, run an MCP server, or depend on the Lexmount Node.js SDK.
 
-> Status: preview releases are published on npm under the `next` tag. Windows x64, macOS Apple Silicon, and Linux x64 native validation is complete; use `next` for preview installations.
+> Status: Windows x64, macOS Apple Silicon, and Linux x64 native validation is complete. The current stable Bundle version is `0.1.1`.
 
-> **Current platform support:** Windows x64, macOS Apple Silicon, and Linux x64. macOS Intel and Linux ARM64 are not supported by this pre-release.
+> **Current platform support:** Windows x64, macOS Apple Silicon, and Linux x64. macOS Intel and Linux ARM64 are not currently supported.
 
 ## Runtime architecture
 
@@ -30,15 +30,14 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 | macOS Intel | `x86_64-apple-darwin` | Not currently supported; asset missing |
 | Linux ARM64 | — | Not currently supported; asset missing |
 
-`native-source.json` pins `browser-cli` v1.1.15 at commit `952a5e53ff9dd3980342d4dae7f860f80b39a100`. The Windows asset statically links the C runtime, and the Linux x64 asset is a static musl executable. This pre-release uses the three assets published by that immutable release. Adding another platform requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
+`native-source.json` pins `browser-cli` v1.1.15 at commit `952a5e53ff9dd3980342d4dae7f860f80b39a100`. The Windows asset statically links the C runtime, and the Linux x64 asset is a static musl executable. This Bundle uses the three assets published by that immutable release. Adding another platform requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
 
 ## Install
 
-The current pre-release requires Node.js `>=22.14.0`, DSH `0.1.0-rc.6`, and a
+The current release requires Node.js `>=22.14.0`, DSH `0.1.0-rc.6`, and a
 `pnpm` executable on `PATH`. The commands below use `npx`, so a global DSH
-installation is not required. Keep `@next` in preview installations; do not
-rely on npm's implicit `latest` tag until this release line is formally
-promoted.
+installation is not required. The commands pin the Bundle version so DSH's
+dependency release-age policy cannot resolve the request to an older release.
 
 ### Windows x64
 
@@ -52,7 +51,7 @@ corepack install --global pnpm@11.22.0
 corepack enable pnpm
 pnpm --version
 
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@0.1.1
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
 ```
 
@@ -68,7 +67,7 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web --port 0
 
 ### macOS Apple Silicon
 
-This pre-release supports Apple Silicon only. Confirm that the machine reports
+This release supports Apple Silicon only. Confirm that the machine reports
 `arm64`; `x86_64` means an Intel Mac and is not currently supported. In
 Terminal, change to the directory that should become the DSH workspace, then
 run:
@@ -81,7 +80,7 @@ corepack install --global pnpm@11.22.0
 corepack enable pnpm
 pnpm --version
 
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@0.1.1
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
 ```
 
@@ -104,7 +103,7 @@ corepack install --global pnpm@11.22.0
 corepack enable pnpm
 pnpm --version
 
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@0.1.1
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
 ```
 
@@ -127,7 +126,7 @@ into an existing Web process.
 For unattended use, install the same Bundle into the Headless profile:
 
 ```bash
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile headless add @lexmount/dsh-browser@next
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile headless add @lexmount/dsh-browser@0.1.1
 ```
 
 The supported Harness range is `>=0.1.0-rc.6 <0.2.0`. DSH remains a release
