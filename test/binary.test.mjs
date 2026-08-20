@@ -50,6 +50,7 @@ function sourceMetadata() {
     targets: {
       "win32-x64": "x86_64-pc-windows-msvc",
       "darwin-arm64": "aarch64-apple-darwin",
+      "linux-x64": "x86_64-unknown-linux-musl",
     },
   };
 }
@@ -66,21 +67,19 @@ async function createPackageFixture(binary = macArmExecutableFixture()) {
   return { root, binaryPath, binary };
 }
 
-test("selects only the two currently published platform keys", () => {
+test("selects only the three currently published platform keys", () => {
   assert.equal(platformKey("win32", "x64"), "win32-x64");
   assert.equal(platformKey("darwin", "arm64"), "darwin-arm64");
+  assert.equal(platformKey("linux", "x64"), "linux-x64");
   assert.throws(
     () => platformKey("darwin", "x64"),
     BrowserCliInstallationError,
   );
-  assert.throws(
-    () => platformKey("linux", "x64"),
-    BrowserCliInstallationError,
-  );
+  assert.throws(() => platformKey("linux", "arm64"), BrowserCliInstallationError);
 });
 
 test("reads the exact asset checksum from a sha256sum manifest", () => {
-  const asset = "browser-cli-v1.1.13-x86_64-unknown-linux-musl";
+  const asset = "browser-cli-v1.1.15-x86_64-unknown-linux-musl";
   const digest = "a".repeat(64);
   assert.equal(
     checksumForAsset(`${"b".repeat(64)}  other\n${digest} *${asset}\n`, asset),
@@ -190,11 +189,11 @@ test("does not start resolution for an already cancelled call", async () => {
 test("defers an unsupported-platform error until the first tool resolution", async () => {
   const resolver = new BrowserCliResolver({
     platform: "linux",
-    arch: "x64",
+    arch: "arm64",
   });
   await assert.rejects(
     resolver.resolve(new AbortController().signal),
-    /currently supports win32-x64 and darwin-arm64 only/u,
+    /currently supports win32-x64, darwin-arm64, and linux-x64 only/u,
   );
   resolver.dispose();
 });

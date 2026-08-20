@@ -2,9 +2,9 @@
 
 Lexmount cloud browser tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). This package is a lightweight DSH Bundle: it registers native model tools and invokes the Rust `browser-cli`, but it does not contain a native executable, run an MCP server, or depend on the Lexmount Node.js SDK.
 
-> Status: preview releases are published on npm under the `next` tag. Windows x64 and macOS Apple Silicon validation is complete; use `next` for preview installations.
+> Status: preview releases are published on npm under the `next` tag. Windows x64, macOS Apple Silicon, and Linux x64 native validation is complete; use `next` for preview installations.
 
-> **Current platform support:** Windows x64 and macOS Apple Silicon only. macOS Intel is not supported by this pre-release.
+> **Current platform support:** Windows x64, macOS Apple Silicon, and Linux x64. macOS Intel and Linux ARM64 are not supported by this pre-release.
 
 ## Runtime architecture
 
@@ -26,9 +26,11 @@ The npm tarball contains no `browser-cli` or `browser-cli.exe` file. End users d
 | --- | --- | --- |
 | Windows x64 | `x86_64-pc-windows-msvc` | Supported |
 | macOS Apple Silicon | `aarch64-apple-darwin` | Supported |
+| Linux x64 | `x86_64-unknown-linux-musl` | Supported |
 | macOS Intel | `x86_64-apple-darwin` | Not currently supported; asset missing |
+| Linux ARM64 | — | Not currently supported; asset missing |
 
-`native-source.json` pins `browser-cli` v1.1.13 at commit `3af544780365309feae97d51b631070e7ca73762`. The Windows asset in this release statically links the C runtime. This pre-release intentionally uses the two assets published by that immutable release. Adding macOS Intel requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
+`native-source.json` pins `browser-cli` v1.1.15 at commit `952a5e53ff9dd3980342d4dae7f860f80b39a100`. The Windows asset statically links the C runtime, and the Linux x64 asset is a static musl executable. This pre-release uses the three assets published by that immutable release. Adding another platform requires a new browser-cli version and a new npm package version with fresh validation; it will not mutate this release in place.
 
 ## Install
 
@@ -90,6 +92,29 @@ printed URL:
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web --port 0
 ```
 
+### Linux x64
+
+Confirm that the machine reports `x86_64`, then run:
+
+```bash
+uname -m
+node --version
+corepack --version
+corepack install --global pnpm@11.22.0
+corepack enable pnpm
+pnpm --version
+
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add @lexmount/dsh-browser@next
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web
+```
+
+If port `3080` is already occupied, use an OS-assigned free port and open the
+printed URL:
+
+```bash
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 web --port 0
+```
+
 DSH RC.6 delegates plugin installation to a `pnpm` executable on `PATH`; it does
 not bundle that executable. If Corepack cannot create the shim, install pnpm
 through the normal Node package-manager setup and verify `pnpm --version`
@@ -123,6 +148,7 @@ Default cache locations are:
 | --- | --- |
 | Windows | `%LOCALAPPDATA%\Lexmount\dsh-browser` |
 | macOS | `~/Library/Caches/Lexmount/dsh-browser` |
+| Linux | `$XDG_CACHE_HOME/lexmount/dsh-browser` or `~/.cache/lexmount/dsh-browser` |
 
 Set `LEXMOUNT_BROWSER_CLI_CACHE_DIR` to choose another cache root. `LEXMOUNT_BROWSER_CLI_PATH` is an explicit administrator/developer override for a preinstalled CLI; that path is still checked for format and version, but its trust is controlled by whoever sets the environment variable.
 
@@ -154,7 +180,7 @@ DSH RC.6 does not expose MCP-style side-effect annotations on native tools. UI p
 
 ## Known browser-cli limitations
 
-The first release intentionally retains behavior already shipped through WorkBuddy:
+The first release intentionally retains the existing browser-cli behavior:
 
 - URL, form value, JavaScript, metadata, and raw CDP params are visible in local process argv;
 - each action connects independently and selects the first page target;
@@ -173,13 +199,13 @@ npm run check
 npm run package:verify
 ```
 
-On a currently supported host, test a locally built v1.1.13 CLI without changing the package:
+On a currently supported host, test a locally built v1.1.15 CLI without changing the package:
 
 ```bash
 LEXMOUNT_BROWSER_CLI_PATH=/absolute/path/to/browser-cli npm run test:native
 ```
 
-Verify the pinned remote assets, then run the real current-platform integration test on Windows x64 or macOS Apple Silicon:
+Verify the pinned remote assets, then run the real current-platform integration test on Windows x64, macOS Apple Silicon, or Linux x64:
 
 ```bash
 npm run native:assets

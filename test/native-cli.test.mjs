@@ -25,7 +25,7 @@ test("downloads, resolves, and executes the native browser CLI", async () => {
   const signal = new AbortController().signal;
   try {
     const version = await runner.run(["version"], signal);
-    assert.equal(version.version, "1.1.13");
+    assert.equal(version.version, "1.1.15");
 
     const status = await runner.run(["auth", "status"], signal);
     assert.equal(typeof status.valid, "boolean");
