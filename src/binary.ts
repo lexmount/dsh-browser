@@ -21,12 +21,12 @@ import { HarnessError } from "@deepseek-ai/dsh-llm";
 import { isJsonRecord, type JsonValue } from "./json.js";
 import { redactText } from "./redact.js";
 
-export const EXPECTED_CLI_VERSION = "1.1.13";
-export const EXPECTED_CLI_COMMIT = "3af544780365309feae97d51b631070e7ca73762";
+export const EXPECTED_CLI_VERSION = "1.1.15";
+export const EXPECTED_CLI_COMMIT = "952a5e53ff9dd3980342d4dae7f860f80b39a100";
 export const EXPECTED_CLI_REPOSITORY =
   "https://github.com/lexmount/browser-cli-rs.git";
 export const EXPECTED_DOWNLOAD_BASE_URL =
-  "https://cli-bin-1377899528.cos.ap-nanjing.myqcloud.com/releases/browser-cli/v1.1.13";
+  "https://cli-bin-1377899528.cos.ap-nanjing.myqcloud.com/releases/browser-cli/v1.1.15";
 
 const CHECKSUM_ASSET = "SHA256SUMS";
 const MAX_CHECKSUM_BYTES = 1024 * 1024;
@@ -36,29 +36,33 @@ const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const PLATFORM_TARGETS = {
   "win32-x64": {
-    asset: "browser-cli-v1.1.13-x86_64-pc-windows-msvc.exe",
+    asset: "browser-cli-v1.1.15-x86_64-pc-windows-msvc.exe",
     executable: "browser-cli.exe",
     target: "x86_64-pc-windows-msvc",
   },
   "darwin-arm64": {
-    asset: "browser-cli-v1.1.13-aarch64-apple-darwin",
+    asset: "browser-cli-v1.1.15-aarch64-apple-darwin",
     executable: "browser-cli",
     target: "aarch64-apple-darwin",
   },
   "darwin-x64": {
-    asset: "browser-cli-v1.1.13-x86_64-apple-darwin",
+    asset: "browser-cli-v1.1.15-x86_64-apple-darwin",
     executable: "browser-cli",
     target: "x86_64-apple-darwin",
   },
   "linux-x64": {
-    asset: "browser-cli-v1.1.13-x86_64-unknown-linux-musl",
+    asset: "browser-cli-v1.1.15-x86_64-unknown-linux-musl",
     executable: "browser-cli",
     target: "x86_64-unknown-linux-musl",
   },
 } as const;
 
 export type SupportedPlatform = keyof typeof PLATFORM_TARGETS;
-const PUBLISHED_PLATFORM_KEYS = ["win32-x64", "darwin-arm64"] as const;
+const PUBLISHED_PLATFORM_KEYS = [
+  "win32-x64",
+  "darwin-arm64",
+  "linux-x64",
+] as const;
 
 interface NativeSource {
   schemaVersion: number;
@@ -158,7 +162,7 @@ export function platformKey(
     return key as SupportedPlatform;
   }
   throw new BrowserCliInstallationError(
-    `Unsupported platform ${key}. This @lexmount/dsh-browser pre-release currently supports win32-x64 and darwin-arm64 only.`,
+    `Unsupported platform ${key}. This @lexmount/dsh-browser pre-release currently supports win32-x64, darwin-arm64, and linux-x64 only.`,
   );
 }
 
