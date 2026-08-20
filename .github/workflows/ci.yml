@@ -26,7 +26,7 @@ jobs:
       - run: npm run package:verify
       - name: Verify native source pin
         run: |
-          node --input-type=module -e "import source from './native-source.json' with { type: 'json' }; if (source.commit !== '3af544780365309feae97d51b631070e7ca73762' || source.version !== '1.1.13') process.exit(1)"
+          node --input-type=module -e "import source from './native-source.json' with { type: 'json' }; if (source.commit !== '952a5e53ff9dd3980342d4dae7f860f80b39a100' || source.version !== '1.1.15') process.exit(1)"
       - name: Verify Bundle manifest
         run: |
           node --input-type=module -e "import pkg from './package.json' with { type: 'json' }; if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') process.exit(1)"
